@@ -35,6 +35,8 @@ RUN echo "===> Adding Ansible's prerequisites..."   && \
     \
     echo "===> Compiling Ansible..."      && \
     cd ansible                            && \
+    git fetch && git fetch --tags && \
+    git checkout v2.8.4 && \
     bash -c 'source ./hacking/env-setup'  && \
     \
     \
@@ -59,12 +61,24 @@ RUN echo "===> Adding Ansible's prerequisites..."   && \
     \
     echo "===> Adding hosts for convenience..."  && \
     mkdir -p /etc/ansible                        && \
-    echo 'localhost' > /etc/ansible/hosts
+    echo 'localhost' > /etc/ansible/hosts	 && \
+    echo '192.168.0.114' > /etc/ansible/hosts
+
+RUN echo "===> Install docker python module " && \
+    pip install docker 
 
 
 ENV PATH        /opt/ansible/bin:$PATH
 ENV PYTHONPATH  /opt/ansible/lib:$PYTHONPATH
 ENV MANPATH     /opt/ansible/docs/man:$MANPATH
+ENV PATH        /usr/local/lib/python2.7/dist-packages/docker:$PATH
+
+WORKDIR /ansible/playbooks
+
+RUN mkdir /ansible/playbooks/data
+RUN mkdir /ansible/playbooks/backup
+
+ENTRYPOINT ["ansible-playbook"]
 
 # default command: display Ansible version
-CMD [ "ansible-playbook", "--version" ]
+#CMD [ "ansible-playbook", "--version" ]
